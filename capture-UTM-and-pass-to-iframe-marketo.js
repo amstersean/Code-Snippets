@@ -1,5 +1,6 @@
 
-var $jQ = jQuery.noConflict();
+<script>
+ var $jQ = jQuery.noConflict();
   
 // Parse the URL
 function getParameterByName(name) {
@@ -77,4 +78,5 @@ $jQ(document).ready(function(){
         });
     }
 
-});
+});   
+</script>
