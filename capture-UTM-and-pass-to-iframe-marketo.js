@@ -1,6 +1,6 @@
 
 <script>
- var $jQ = jQuery.noConflict();
+var $jQ = jQuery.noConflict();
   
 // Parse the URL
 function getParameterByName(name) {
@@ -15,24 +15,32 @@ var source = getParameterByName('utm_source');
 var medium = getParameterByName('utm_medium');
 var campaign = getParameterByName('utm_campaign');
 var content = getParameterByName('utm_content');
+var referrer = WebReferrerParam();
  
 //function to build the the query string
 function EncodeQueryData(data)
 {
    var ret = [];
    for (var d in data){
-       if(['utm_source', 'utm_medium', 'utm_campaign', 'utm_content'].indexOf(encodeURIComponent(d)) >= 0){
+       if(['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'web_referrer'].indexOf(encodeURIComponent(d)) >= 0){
            ret.push(encodeURIComponent(d) + "=" + encodeURIComponent(data[d]));
        }       
    }      
       
    return ret.join("&");
-}  
+}
+
+function WebReferrerParam() {
+    var x = ((document.referrer) ? document.referrer : "empty");
+    //var y = "web_referrer=";
+    var z = encodeURIComponent(x);
+    return z;
+}   
 
 $jQ(document).ready(function(){
   
-   //check if the main cookie exists
-    if($jQ.cookie('utm_source')){
+//check if the main cookie exists
+    if($jQ.cookie('web_referrer', { path: '/' }) || $jQ.cookie('web_referrer', { path: '/' }) == 'empty'){
         //Update the marketo iframe's url 
         var data = $jQ.cookie();
         var queryData = EncodeQueryData(data);
@@ -51,12 +59,13 @@ $jQ(document).ready(function(){
                        
     }
     else{
-      //console.log("Cookie Does Not Exists");
+        //console.log("Cookie Does Not Exists");
         //create the cookie for future use
-        $jQ.cookie('utm_source', source);
-        $jQ.cookie('utm_medium', medium);
-        $jQ.cookie('utm_campaign', campaign);
-        $jQ.cookie('utm_content', content);
+        $jQ.cookie('utm_source', source, { path: '/' });
+        $jQ.cookie('utm_medium', medium, { path: '/' });
+        $jQ.cookie('utm_campaign', campaign, { path: '/' });
+        $jQ.cookie('utm_content', content, { path: '/' });
+        $jQ.cookie('web_referrer', decodeURIComponent(referrer), { path: '/' });
         
         //Update the marketo iframe's url from the window url
         $jQ("iframe[data-form='marketo']").each(function(){
@@ -64,12 +73,14 @@ $jQ(document).ready(function(){
             var mktoIframe= $jQ(this);
             var formURL= mktoIframe.attr("src").trim();            
             //get the url params for the window
-            var params= window.location.search; 
-            if(!params){
+            var params = window.location.search; 
+            try {
                 var data = $jQ.cookie();
                 params = EncodeQueryData(data);
-                params = "?" + params;
-            }           
+                params = "?" + params
+            } catch (error) {
+                
+            }                    
             //combine the url and parmams 
             var newFormURL= formURL + params;
             //set the iframe src as the new combination 
@@ -77,6 +88,7 @@ $jQ(document).ready(function(){
             
         });
     }
+
 
 });   
 </script>
